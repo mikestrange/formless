@@ -1,20 +1,41 @@
 package game.core 
 {
+	import flash.filters.GlowFilter;
 	import game.physics.IRegion;
 	
 	/**
 	 * ...
 	 * @author Mike email:542540443@qq.com
 	 */
-	public class PhyBox extends SkinBox implements IRegion 
+	public class BoxRegion extends SkinBox implements IRegion 
 	{
 		
-		public function PhyBox(skin:Skin = null) 
+		public function BoxRegion(skin:Skin = null) 
 		{
 			super(skin);
 		}
 		
 		/* INTERFACE game.physics.IRegion */
+		public function setPositionX(value:Number):void
+		{
+			x = value;
+		}
+		
+		public function setPositionY(value:Number):void
+		{
+			y = value;
+		}
+		
+		public function getPositionX():Number
+		{
+			return x;
+		}
+		
+		public function getPositionY():Number
+		{
+			return y;
+		}
+		
 		public function get type():int 
 		{
 			return 0;
@@ -54,6 +75,10 @@ package game.core
 			return true;
 		}
 		
+		public function hinder():void
+		{
+			this.filters = [new GlowFilter(0xff0000)];
+		}
 		//end
 	}
 

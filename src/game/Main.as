@@ -8,7 +8,7 @@ package game
 	import flash.ui.Keyboard;
 	import flash.ui.KeyboardType;
 	import flash.utils.getTimer;
-	import game.core.PhyBox;
+	import game.core.BoxRegion;
 	import game.core.Skin;
 	import game.core.SkinBox;
 	import game.physics.PhyBody;
@@ -31,7 +31,7 @@ package game
 			//
 			createList();
 			//
-			var spt:PhyBox = new PhyBox(new Skin(new BitmapData(10, 10, true, 0xffff0000)));
+			var spt:BoxRegion = new BoxRegion(new Skin(new BitmapData(10, 10, true, 0xffff0000)));
 			spt.x = 500;
 			spt.y = 200;
 			this.addChild(spt);
@@ -45,7 +45,7 @@ package game
 			_list = new Array;
 			for (var i:int = 0; i < 400; i++)
 			{
-				var spt:PhyBox = new PhyBox(new Skin(new BitmapData(Math.random() * 40 + 10, Math.random() * 20 + 10, false, 0)));
+				var spt:BoxRegion = new BoxRegion(new Skin(new BitmapData(Math.random() * 40 + 10, Math.random() * 20 + 10, false, 0)));
 				spt.x = Math.random() * stage.stageWidth;
 				spt.y = Math.random() * stage.stageHeight;
 				this.addChild(spt);
@@ -63,20 +63,9 @@ package game
 		private function onKeyDown(event:KeyboardEvent):void
 		{
 			if (event.type == KeyboardEvent.KEY_UP) {
-				if (event.keyCode == Keyboard.A) {
-					_self.wallopx = 0;
-				}
-				if (event.keyCode == Keyboard.D) {
-					_self.wallopx = 0;
-				}
-				if (event.keyCode == Keyboard.W) {
-					_self.wallopy = 0;
-				}
-				if (event.keyCode == Keyboard.S) {
-					_self.wallopy = 0;
-				}
+				if (event.keyCode == Keyboard.A||event.keyCode == Keyboard.D) _self.wallopx = 0;
 			}else {
-				const speed:int = 10
+				const speed:int = 2
 				if (event.keyCode == Keyboard.A) {
 					_self.wallopx = -speed;
 				}
@@ -84,24 +73,19 @@ package game
 					_self.wallopx = speed;
 				}
 				if (event.keyCode == Keyboard.W) {
-					_self.wallopy = -speed;
+					//if (_self.wallopy > 0) return;
+					_self.setThrust(20);
 				}
-				if (event.keyCode == Keyboard.S) {
-					_self.wallopy = speed;
-				}	
+				//
 			}
 		}
 		
 		private function runEvent(event:Event):void
 		{
-			for each(var obj:PhyBox in _list) {
+			for each(var obj:BoxRegion in _list) {
 				obj.filters = null;
 			}
-			//var t:int = getTimer();
 			_self.endRender(_list);
-			//trace("渲染时间：", getTimer() - t);
-			//trace(_self.data.x)
-			//this.removeEventListener(Event.ENTER_FRAME, runEvent);
 		}
 		
 		//end

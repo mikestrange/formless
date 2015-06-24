@@ -7,10 +7,11 @@ package game.physics
 	 */
 	public interface IRegion 
 	{
-		function set x(value:Number):void;
-		function set y(value:Number):void;
-		function get x():Number;
-		function get y():Number;
+		function setPositionX(value:Number):void;
+		function setPositionY(value:Number):void;
+		function getPositionX():Number;
+		function getPositionY():Number;
+		//
 		function get width():Number;
 		function get height():Number;
 		//区域类型
@@ -23,6 +24,8 @@ package game.physics
 		//
 		function isMiddleY(value:IRegion):Boolean;
 		function isMiddleX(value:IRegion):Boolean;
+		//
+		function hinder():void;
 		//end
 	}
 	

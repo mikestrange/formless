@@ -1,9 +1,5 @@
 package game.physics 
 {
-	import flash.display.Sprite;
-	import flash.filters.GlowFilter;
-	import flash.geom.Rectangle;
-	
 	/**
 	 * ...只做物理测试，不做旋转以及变形处理
 	 * ...这里只做横版
@@ -20,8 +16,11 @@ package game.physics
 		public var inertia:Number;						//惯性值
 		public var strength:Number;						//抗击力
 		//
+		public const speed:Number = 5;					//上升速度
 		public const gravity:Number = 0.98;				//重力加速度
 		public var omitGravity:Boolean = false;			//是否忽略重力
+		private var _addspeed:Number = 0;				//当前加速度
+		private var _thrust:Number;						//上冲力
 		
 		public function PhyBody(user:IRegion = null) 
 		{
@@ -48,96 +47,133 @@ package game.physics
 			inertia = 0;
 			friction = 0;
 			strength = 0;
+			landed();
 		}
 		
 		//最终渲染和行为有关系
-		public function endRender(lumps:Array, checkType:int = CheckType.ALL):void
+		public function endRender(lumps:Array, checkType:int = 0):void
 		{
-			switch(checkType)
+			checkGravity();
+			checkLeft(lumps);
+			checkRight(lumps);
+			checkHeader(lumps);
+			checkBottom(lumps);
+		}
+		
+		//校正重力
+		private function checkGravity():void
+		{
+			if (omitGravity) return;
+			_addspeed = _addspeed + speed;
+			_addspeed *= gravity;
+			wallopy = _addspeed - _thrust;
+		}
+		
+		//设置一个冲量
+		public function setThrust(value:Number):void
+		{
+			if (omitGravity) return;
+			_thrust = value;
+		}
+		
+		//到达地表
+		protected function landed():void
+		{
+			_addspeed = NONE;
+			_thrust = NONE;
+		}
+		
+		public function isLanded():Boolean
+		{
+			return _thrust == NONE;
+		}
+		
+		protected function checkLeft(limts:Array):void
+		{
+			if (wallopx > NONE) 
 			{
-				case CheckType.ALL:		
-					
-					checkX(lumps);	
-					checkY(lumps);
-				break;
-				case CheckType.DROP:
-					
-				break;	
-			}
-		}
-		
-		//X轴判断
-		private function checkX(lumps:Array):void
-		{
-			if (wallopx == NONE) return;
-			var dot:IRegion = null;
-			var nearby:IRegion = null;
-			var endValue:Number = data.x + wallopx;
-			if (wallopx > NONE) {
-				lumps.sortOn("left", Array.NUMERIC);
+				var endValue:Number = data.getPositionX() + wallopx;
+				limts.sortOn("left", Array.NUMERIC);
 				//trace("move right")
-				for (var i:int = 0; i < lumps.length; i++) {
-					dot = lumps[i];
-					if (dot.left >= data.right && dot.isMiddleY(data)) {
-						nearby = dot;
-						Sprite(dot).filters = [new GlowFilter(0xff0000)];
+				for (var i:int = 0; i < limts.length; i++) {
+					var nearby:IRegion = limts[i];
+					if (nearby.left >= data.right && nearby.isMiddleY(data)) {
+						if (nearby && data.right + wallopx > nearby.left) {
+							endValue = nearby.left - data.width;
+						}
+						nearby.hinder();
 						break;
 					}
 				}
-				if (nearby && data.right + wallopx > nearby.left) endValue = nearby.left - data.width;
-			}else {
-				lumps.sortOn("right", Array.NUMERIC);
-				//trace("move left")
-				for (var k:int = lumps.length - 1; k >= 0 ; k--) {
-					dot = lumps[k];
-					if (data.left >= dot.right && dot.isMiddleY(data)) {
-						nearby = dot;
-						Sprite(dot).filters = [new GlowFilter(0xff0000)];
-						break;
-					}
-				}
-				if (nearby && data.left + wallopx < nearby.right) endValue = nearby.right;
+				//
+				data.setPositionX(endValue);
 			}
-			//
-			data.x = endValue;
 		}
 		
-		//Y轴判断
-		private function checkY(lumps:Array):void
+		protected function checkRight(limts:Array):void
 		{
-			if (wallopy == NONE) return;
-			var dot:IRegion = null;
-			var nearby:IRegion = null;
-			var endValue:Number = data.y + wallopy;
-			if (wallopy > NONE) {
-				lumps.sortOn("top", Array.NUMERIC);
-				//trace("move down")
-				for (var i:int = 0; i < lumps.length; i++) {
-					dot = lumps[i];
-					if (dot.top >= data.bottom && dot.isMiddleX(data)) 
-					{
-						nearby = dot;
-						Sprite(dot).filters = [new GlowFilter(0xff0000)];
+			if (wallopx < NONE) {
+				var endValue:Number = data.getPositionX() + wallopx;
+				limts.sortOn("right", Array.NUMERIC);
+					//trace("move left")
+				for (var k:int = limts.length - 1; k >= 0 ; k--) {
+					var nearby:IRegion = limts[k];
+					if (data.left >= nearby.right && nearby.isMiddleY(data)) {
+						if (nearby && data.left + wallopx < nearby.right) {
+							endValue = nearby.right;
+						}
+						nearby.hinder();
 						break;
 					}
 				}
-				if (nearby && data.bottom + wallopy > nearby.top) endValue = nearby.top - data.height;
-			}else {
-				lumps.sortOn("bottom", Array.NUMERIC);
-				//trace("move up")
-				for (var k:int = lumps.length - 1; k >= 0; k--) {
-					dot = lumps[k];
-					if (data.top >= dot.bottom && dot.isMiddleX(data)) 
-					{
-						nearby = dot;
-						Sprite(dot).filters = [new GlowFilter(0xff0000)];
-						break;
-					}
-				}
-				if (nearby && data.top + wallopy < nearby.bottom) endValue = nearby.bottom;
+				//
+				data.setPositionX(endValue);
 			}
-			//
-			data.y = endValue;
+		}
+		
+		protected function checkHeader(limts:Array):void
+		{
+			if (wallopy > NONE) {
+				var endValue:Number = data.getPositionY() + wallopy;
+				limts.sortOn("top", Array.NUMERIC);
+				//trace("move down")
+				for (var i:int = 0; i < limts.length; i++) {
+					var nearby:IRegion = limts[i];
+					if (nearby.top >= data.bottom && nearby.isMiddleX(data)) 
+					{
+						if (nearby && data.bottom + wallopy > nearby.top) {
+							endValue = nearby.top - data.height;
+							//落地表示
+							landed();
+						}
+						nearby.hinder();
+						break;
+					}
+				}
+				data.setPositionY(endValue);
+			}
+		}
+		
+		protected function checkBottom(limts:Array):void
+		{
+			if (wallopy < NONE) {
+				var endValue:Number = data.getPositionY() + wallopy;
+				limts.sortOn("bottom", Array.NUMERIC);
+				//trace("move up")
+				for (var k:int = limts.length - 1; k >= 0; k--) {
+					var nearby:IRegion = limts[k];
+					if (data.top >= nearby.bottom && nearby.isMiddleX(data)) 
+					{
+						if (nearby && data.top + wallopy < nearby.bottom) {
+							endValue = nearby.bottom;
+						}
+						nearby.hinder();
+						break;
+					}
+				}
+				//最终结果
+				data.setPositionY(endValue);
+			}
 		}
 		//end
 	}
