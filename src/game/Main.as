@@ -43,9 +43,14 @@ package game
 		private function createList():void
 		{
 			_list = new Array;
-			for (var i:int = 0; i < 400; i++)
+			var ran:int = Math.random() * 400 | 0;
+			for (var i:int = 0; i < 300; i++)
 			{
-				var spt:BoxRegion = new BoxRegion(new Skin(new BitmapData(Math.random() * 40 + 10, Math.random() * 20 + 10, false, 0)));
+				var color:uint = 0xff000000;
+				if (ran == i) {
+					color = 0xffff0000;
+				}
+				var spt:BoxRegion = new BoxRegion(new Skin(new BitmapData(Math.random() * 40 + 10, Math.random() * 20 + 10, true, color)));
 				spt.x = Math.random() * stage.stageWidth;
 				spt.y = Math.random() * stage.stageHeight;
 				this.addChild(spt);
@@ -73,8 +78,8 @@ package game
 					_self.wallopx = speed;
 				}
 				if (event.keyCode == Keyboard.W) {
-					//if (_self.wallopy > 0) return;
-					_self.setThrust(20);
+					if (!_self.isLanded()) return;
+					_self.setThrust(30);
 				}
 				//
 			}
@@ -86,6 +91,9 @@ package game
 				obj.filters = null;
 			}
 			_self.endRender(_list);
+			if (_self.data.getPositionY() > stage.stageHeight) {
+				_self.data.setPositionY(0);
+			}
 		}
 		
 		//end
