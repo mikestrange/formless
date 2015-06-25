@@ -81,6 +81,7 @@ package game.core
 			this.filters = [new GlowFilter(0xff0000)];
 		}
 		
+		//接触到
 		public function onHitRegion(type:int, value:IRegion):void
 		{
 			
