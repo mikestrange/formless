@@ -78,8 +78,9 @@ package game
 					_self.wallopx = speed;
 				}
 				if (event.keyCode == Keyboard.W) {
-					if (!_self.isLanded()) return;
-					_self.setThrust(30);
+					if (_self.isLanded()) {
+						_self.setThrust(30);
+					}
 				}
 				//
 			}

@@ -9,6 +9,10 @@ package game.physics
 		public static const ALL:int = 0;
 		public static const DROP:int = 1;
 		
+		public static const LEFT:int = 0;
+		public static const RIGHT:int = 1;
+		public static const TOP:int = 2;
+		public static const BOTTOM:int = 3;
 		//ends
 	}
 

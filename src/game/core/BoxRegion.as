@@ -75,9 +75,15 @@ package game.core
 			return true;
 		}
 		
-		public function hinder():void
+		//被瞄准
+		public function onTakeAim(target:IRegion):void
 		{
 			this.filters = [new GlowFilter(0xff0000)];
+		}
+		
+		public function onHitRegion(type:int, value:IRegion):void
+		{
+			
 		}
 		//end
 	}

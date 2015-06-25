@@ -1,5 +1,6 @@
 package game.physics 
 {
+	import flash.events.EventDispatcher;
 	/**
 	 * ...只做物理测试，不做旋转以及变形处理
 	 * ...这里只做横版
@@ -8,13 +9,14 @@ package game.physics
 	public class PhyBody
 	{
 		private static const NONE:int = 0;
+		//被应用的一个区域
 		private var _user:IRegion;
 		//
 		public var wallopx:Number; 						//x冲击力
 		public var wallopy:Number; 						//x冲击力
 		public var friction:Number;						//摩擦力
-		public var inertia:Number;						//惯性值
-		public var strength:Number;						//抗击力
+		public var inertia:Number;						//惯性值  (和质量有关系)
+		public var strength:Number;						//抗击力  ()
 		//
 		public const speed:Number = 5;					//上升速度
 		public const gravity:Number = 0.98;				//重力加速度
@@ -47,7 +49,8 @@ package game.physics
 			inertia = 0;
 			friction = 0;
 			strength = 0;
-			landed();
+			_addspeed = NONE;
+			_thrust = NONE;
 		}
 		
 		//最终渲染和行为有关系
@@ -74,13 +77,7 @@ package game.physics
 		{
 			if (omitGravity) return;
 			_thrust = value;
-		}
-		
-		//到达地表
-		protected function landed():void
-		{
 			_addspeed = NONE;
-			_thrust = NONE;
 		}
 		
 		public function isLanded():Boolean
@@ -100,8 +97,9 @@ package game.physics
 					if (nearby.left >= data.right && nearby.isMiddleY(data)) {
 						if (nearby && data.right + wallopx > nearby.left) {
 							endValue = nearby.left - data.width;
+							data.onHitRegion(CheckType.RIGHT, nearby);
 						}
-						nearby.hinder();
+						nearby.onTakeAim(data);
 						break;
 					}
 				}
@@ -121,8 +119,9 @@ package game.physics
 					if (data.left >= nearby.right && nearby.isMiddleY(data)) {
 						if (nearby && data.left + wallopx < nearby.right) {
 							endValue = nearby.right;
+							data.onHitRegion(CheckType.LEFT, nearby);
 						}
-						nearby.hinder();
+						nearby.onTakeAim(data);
 						break;
 					}
 				}
@@ -143,10 +142,11 @@ package game.physics
 					{
 						if (nearby && data.bottom + wallopy > nearby.top) {
 							endValue = nearby.top - data.height;
-							//落地表示
-							landed();
+							//落地表示，如果考虑到重力，那么一直会响应
+							setThrust(NONE);
+							data.onHitRegion(CheckType.BOTTOM, nearby);
 						}
-						nearby.hinder();
+						nearby.onTakeAim(data);
 						break;
 					}
 				}
@@ -166,8 +166,9 @@ package game.physics
 					{
 						if (nearby && data.top + wallopy < nearby.bottom) {
 							endValue = nearby.bottom;
+							data.onHitRegion(CheckType.TOP, nearby);
 						}
-						nearby.hinder();
+						nearby.onTakeAim(data);
 						break;
 					}
 				}

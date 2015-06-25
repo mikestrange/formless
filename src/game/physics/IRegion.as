@@ -24,8 +24,10 @@ package game.physics
 		//
 		function isMiddleY(value:IRegion):Boolean;
 		function isMiddleX(value:IRegion):Boolean;
-		//
-		function hinder():void;
+		//被瞄准
+		function onTakeAim(target:IRegion):void;
+		//触碰或者是到达
+		function onHitRegion(type:int, value:IRegion):void;
 		//end
 	}
 	
